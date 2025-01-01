@@ -1,0 +1,24 @@
+﻿@model OES.Models.CreateBatch
+
+@{
+    ViewBag.Title = "Edit Batch";
+}
+
+<h1>Edit Batch</h1>
+
+<!-- Edit Form -->
+<form method="post">
+    <div class="form-group">
+        <label for="BatchName">Batch Name</label>
+        <input type="text" class="form-control" id="BatchName" name="BatchName" value="@Model.BatchName" required>
+    </div>
+
+    <div class="form-group">
+        <label for="InstitutesName">Institute Name</label>
+        <input type="text" class="form-control" id="InstitutesName" name="InstitutesName" value="@Model.InstitutesName" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+</form>
+
+<a href="@Url.Action("TeacherDashboard", "Teacher")" class="btn btn-secondary mt-3">Cancel</a>

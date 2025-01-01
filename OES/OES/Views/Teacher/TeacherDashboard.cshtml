@@ -1,0 +1,407 @@
+﻿@model IEnumerable<OES.Models.CreateBatch>
+
+@{
+    ViewBag.Title = "Teacher Dashboard";
+    Layout = "~/Views/Shared/_TeacherNavbarPage1.cshtml";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<h1 class="text-center animated-text my-4" style="font-weight: bold;">Teacher Dashboard</h1>
+
+
+@if (TempData["Status"] != null)
+{
+    <script>
+        alert('@TempData["Status"]');
+    </script>
+}
+
+
+<div class="container mb-4">
+    <div class="input-group">
+        <!-- Search Icon -->
+        <span class="input-group-text bg-light border-0">
+            <i class="fas fa-search"></i>
+        </span>
+
+        <!-- Search Input -->
+        <input type="text"
+               id="batchSearch"
+               class="form-control"
+               placeholder="Search by Batch ID, Name, or Institute..."
+               onkeyup="filterBatches()">
+
+        <!-- Clear Button -->
+        <button type="button"
+                class="btn btn-secondary btn-sm clear-btn"
+                onclick="clearSearch()">
+            &times;
+        </button>
+    </div>
+</div>
+
+<!-- Dynamic No Batches Found Message -->
+<div id="noBatchMessage" class="text-center alert alert-warning" style="display: none;">
+    <h1>No batches found.</h1>
+</div>
+
+
+<!-- Demo Card for Create Batch (Always First) -->
+<div class="container mb-4 ">
+    <div class="row justify-content-center">
+        <!-- Centering the row -->
+        <div class="col-md-4 mb-4 batch-card">
+            <div class="card animated-card">
+                <div class="card-body text-center">
+                    <!-- Centering text inside the card -->
+                    @*<h5 class="card-title animated-text">Create Batch</h5>*@
+                    <p><strong>Batch ID:</strong> 1234</p>
+                    <p><strong>Batch Name:</strong> Sample Batch Name</p>
+                    <p><strong>Institute Name:</strong> Sample Institute</p>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Create Batch</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Information with Sorting (Dynamic Cards) -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <!-- Center the row -->
+        @foreach (var batch in Model)
+        {
+            <div class="col-md-4 mb-4 batch-card">
+                <div class="card animated-card">
+                    <div class="card-body d-flex flex-column text-center">
+                        <!-- Centering text and buttons inside the card -->
+                        <p class="card-text"><strong>Batch ID:</strong> @batch.BatchId</p>
+                        <h5 class="card-title">@batch.BatchName</h5>
+                        <p class="card-text"><strong>Institute:</strong> @batch.InstitutesName</p>
+                        <div class="mt-auto">
+                            @Html.ActionLink("Go Batch", "GoToBatch", "Teacher", new { batchid = @batch.BatchId }, new { @class = "btn btn-primary btn-sm" })
+                            @Html.ActionLink("Edit", "EditBatch", "Teacher", new { id = batch.BatchId }, new { @class = "btn btn-primary btn-sm" })
+                            <form action="@Url.Action("DeleteBatch", "Teacher", new { id = batch.BatchId })" style="padding-top:10px" method="post" onsubmit="return confirm('Are you sure you want to delete this batch?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete Batch</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-warning">No batches found.</div>
+}
+
+<!-- Modal for Create Batch -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title animated-text" id="exampleModalLabel">Batch Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="batchForm" method="post" action="/Teacher/CreateBatch">
+                    <div class="mb-3">
+                        <label for="teacherId" class="form-label">Teacher ID</label>
+                        <input type="number" class="form-control" id="teacherId" name="TeacherId" value="@TempData["teacherid"]" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="batchName" class="form-label">Batch Name</label>
+                        <input type="text" class="form-control" id="batchName" name="BatchName" placeholder="Enter batch name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="instituteName" class="form-label">Institute Name</label>
+                        <input type="text" class="form-control" id="instituteName" name="InstitutesName" placeholder="Enter institute name" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="batchForm">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterBatches() {
+        var input = document.getElementById("batchSearch");
+        var filter = input.value.toLowerCase();
+        var cards = document.querySelectorAll(".batch-card");
+        var noBatchMessage = document.getElementById("noBatchMessage");
+        var hasVisibleCard = false;
+
+        cards.forEach(function (card) {
+            var batchIdElement = card.querySelector(".card-text strong:nth-child(1)");
+            var batchNameElement = card.querySelector(".card-title");
+            var instituteElement = card.querySelector(".card-text strong:nth-child(2)");
+
+            var batchId = batchIdElement ? batchIdElement.nextSibling.nodeValue.trim().toLowerCase() : "";
+            var batchName = batchNameElement ? batchNameElement.textContent.trim().toLowerCase() : "";
+            var institute = instituteElement ? instituteElement.nextSibling.nodeValue.trim().toLowerCase() : "";
+
+            if (batchId.includes(filter) || batchName.includes(filter) || institute.includes(filter)) {
+                card.style.display = "";
+                hasVisibleCard = true;
+            } else {
+                card.style.display = "none";
+            }
+        });
+
+        // Show "No batches found" message if no visible cards are left
+        if (!hasVisibleCard) {
+            noBatchMessage.style.display = "block";
+        } else {
+            noBatchMessage.style.display = "none";
+        }
+    }
+
+    function clearSearch() {
+        var input = document.getElementById("batchSearch");
+        input.value = ""; // Clear input
+        filterBatches(); // Show all cards
+    }
+
+
+
+</script>
+
+
+<style>
+    /* Add Cormorant Infant Font */
+    @@import url('https://fonts.googleapis.com/css2?family=Cormorant+Infant:wght@500&display=swap');
+
+
+
+
+
+
+
+
+    .btn-secondary.clear-btn {
+        background-color: transparent; /* Make the clear button match the theme */
+        color: #00FFFF; /* Cyan color for the button */
+        border: none;
+    }
+
+        .btn-secondary.clear-btn:hover {
+            background-color: #008B8B; /* Slight hover effect */
+            color: #FFFFFF; /* White on hover */
+        }
+
+
+
+    .input-group {
+        position: relative;
+    }
+
+    #clearSearch {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 2;
+        background: transparent;
+        border: none;
+        color: gray;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+        #clearSearch:hover {
+            color: red;
+        }
+
+
+
+
+
+
+    /* Center text inside the cards */
+    .card-body {
+        text-align: center; /* This will center all the text inside the card */
+    }
+
+    /* Demo card centering */
+    .row.justify-content-center {
+        display: flex;
+        justify-content: center; /* Center the demo card row horizontally */
+    }
+
+    /* Ensure cards have consistent height */
+    .card {
+        height: 100%; /* Make sure all cards have the same height */
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* To make sure the "Create Batch" button is centered */
+    .card-body .mt-3 {
+        margin-top: auto;
+    }
+
+    /* Hover effect for card */
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(255, 255, 255, 0.8);
+    }
+
+    body {
+        font-family: 'Cormorant Infant', serif;
+        background-color: #0D1517; /* Dark background */
+        color: #FFFFFF; /* White text for high contrast */
+        margin: 0;
+        padding: 0;
+    }
+
+    h2 {
+        font-weight: bold;
+        font-size: 3rem;
+        color: #FFFFFF;
+    }
+
+    /* Responsive Container */
+    .container {
+        padding: 20px;
+    }
+
+    /* Flexbox for row layout */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    /* Card Styles */
+    .card {
+        background-color: #1A2428; /* Slightly lighter background for contrast */
+        color: #FFFFFF; /* White text */
+        border: none;
+        border: 1px solid #FFD700;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(255, 255, 255, 0.6); /* White shadow */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        opacity: 0; /* Start with invisible */
+        transform: translateY(50px); /* Initial position for animation */
+        animation: slideUp 0.6s ease-out forwards; /* Slide up animation */
+        height: 100%; /* Match demo card height */
+    }
+
+        /* Card Hover Effect */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(255, 255, 255, 0.9); /* White shadow hover effect */
+            box-shadow: 0 6px 12px rgba(255, 255, 255, 0.9); /* White shadow hover effect */
+        }
+
+    .card-title {
+        font-family: 'Cormorant Infant', serif; /* Applying the Cormorant Infant font */
+        font-weight: 600;
+        font-size: 1.75rem;
+        color: #00FFFF; /* Cyan highlight */
+    }
+
+    .card-text {
+        font-family: 'Cormorant Infant', serif; /* Applying the Cormorant Infant font */
+        color: #B8B8B8; /* Light gray text for secondary content */
+    }
+
+    .btn-primary {
+        background-color: #00FFFF; /* Cyan */
+        border: none;
+        border-radius: 6px;
+        color: #0D1517; /* Dark text on cyan buttons */
+    }
+
+        .btn-primary:hover {
+            background-color: #008B8B; /* Slightly darker cyan for hover */
+        }
+
+    .btn-danger {
+        background-color: #C94A4A;
+        border: none;
+        border-radius: 6px;
+        color: #FFFFFF;
+    }
+
+        .btn-danger:hover {
+            background-color: #A83C3C;
+        }
+
+    /* Modal Styling */
+    .modal-content {
+        background-color: #1A2428;
+        color: #FFFFFF;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(255, 255, 255, 0.6);
+    }
+
+    .modal-header h5 {
+        color: #00FFFF; /* Cyan for modal titles */
+    }
+
+    /* Animation: Cards */
+    @@keyframes slideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary, .btn-danger {
+            font-size: 0.9rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        h2 {
+            font-size: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+        }
+
+        .col-md-4 {
+            width: 100%; /* Stack cards vertically on small screens */
+        }
+    }
+
+
+
+
+
+
+    #noBatchMessage {
+        background-color: #1A2428; /* Match the card theme */
+        color: #FFFFFF; /* White text */
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px rgba(255, 255, 255, 0.6);
+    }
+</style>

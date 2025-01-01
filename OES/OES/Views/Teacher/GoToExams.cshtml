@@ -1,0 +1,132 @@
+﻿@model IEnumerable<Questions.Models.CreateExamInfo>
+@{
+    ViewBag.Title = "GoToExams";
+    Layout = "~/Views/Shared/_TeacherNavbarPage1.cshtml";
+}
+
+@if (TempData["Status"] != null)
+{
+    <script>
+        alert('@TempData["Status"]');
+    </script>
+}
+
+<style>
+    /* General Styles */
+    body {
+        font-family: 'Open Sans', sans-serif; /* Or your preferred font */
+        background-color: #f8f9fa;
+    }
+
+    /* Card Styling */
+    .card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    /* Heading Styling */
+    h2 {
+        color: #333;
+    }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+    }
+
+    .bg-success {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .bg-warning {
+        background-color: #ffc107;
+        color: #333;
+    }
+
+    /* Button Styling */
+    .btn {
+        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0069d9;
+            border-color: #0062cc;
+        }
+
+    .btn-outline-danger {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+
+        .btn-outline-danger:hover {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+</style>
+<section class="container-fluid py-5">
+    @if (Model != null && Model.Any())
+    {
+        <div class="container">
+            <h2 class="text-center mb-4">Exams</h2>
+            <div class="row g-4">
+                @foreach (var exam in Model)
+                {
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title fw-bold text-primary">@exam.ExamName</h5>
+                                <p class="card-text"><strong>Subject:</strong> @exam.ExamSubName</p>
+                                <p class="card-text"><strong>Date:</strong> @exam.ExamDate.ToString("yyyy-MM-dd")</p>
+                                <p class="card-text"><strong>Marks:</strong> @exam.ExamMarks</p>
+                                <p class="card-text">
+                                    <span class="badge @(exam.ExamStatus ? "bg-success" : "bg-warning text-dark")">
+                                        @(exam.ExamStatus ? "Complete" : "Not Started")
+                                    </span>
+                                </p>
+
+                                <div class="d-flex justify-content-center flex-wrap gap-2">
+                                    @if (exam.ExamStatus)
+                                    {
+                                        <button class="btn btn-success btn-sm" disabled>Exam Complete</button>
+                                        @Html.ActionLink("Delete Exam", "DeleteExamExams", "Teacher", new { examid = exam.ExamId }, new { @class = "btn btn-outline-danger btn-sm" })
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink("Start Exam", "StartExamExams", "Teacher", new { examid = exam.ExamId }, new { @class = "btn btn-primary btn-sm" })
+                                        @Html.ActionLink("Edit Exam", "EditExamExams", "Teacher", new { examid = exam.ExamId }, new { @class = "btn btn-warning btn-sm" })
+                                        @Html.ActionLink("Delete Exam", "DeleteExamExams", "Teacher", new { examid = exam.ExamId}, new { @class = "btn btn-outline-danger btn-sm" })
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+            var batchId = Model?.FirstOrDefault()?.BatchId;
+            @Html.ActionLink("Exit", "GoToBatch", "Teacher", new { BatchId = batchId }, new { @class = "btn btn-primary mt-4 ps-5 pe-5" })
+        
+    }
+    else
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>No exams found.</strong> Please add exams to display here.
+
+        </div>
+    }
+</section>

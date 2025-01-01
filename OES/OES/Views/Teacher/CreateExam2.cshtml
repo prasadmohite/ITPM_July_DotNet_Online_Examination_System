@@ -1,0 +1,132 @@
+﻿@model OES.Models.ExamAndQuestion
+@{
+    ViewBag.Title = "Create Exam - Add Questions";
+    Layout = "~/Views/Shared/_TeacherNavbarPage1.cshtml";
+}
+
+@if (TempData["Status"] != null)
+{
+    <script>
+        alert('@TempData["Status"]');
+    </script>
+}
+
+<h1 class="text-center my-4">Add Questions to Exam</h1>
+
+<section class="container-fluid">
+    <!-- Button to Open Modal -->
+    <div class="text-center my-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#CreateQuestionModal">
+            Add New Question
+        </button>
+    </div>
+
+    <!-- Modal for Adding Questions -->
+    <div class="modal fade" id="CreateQuestionModal" tabindex="-1" aria-labelledby="CreateQuestionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="CreateQuestionModalLabel">Add New Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="@Url.Action("AddQuestion", "Teacher")">
+                    <div class="modal-body">
+                        <input type="hidden" name="examId" value="@Model.createExamInfo.ExamId" />
+
+                        <div class="mb-3">
+                            <label for="QuestionNo" class="form-label">Question Number</label>
+                            <input type="number" class="form-control" id="QuestionNo" name="QuestionNo" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Question" class="form-label">Question Text</label>
+                            <textarea class="form-control" id="Question" name="Question" rows="3" required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Option1" class="form-label">Option 1</label>
+                                <input type="text" class="form-control" id="Option1" name="Option1" required />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Option2" class="form-label">Option 2</label>
+                                <input type="text" class="form-control" id="Option2" name="Option2" required />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Option3" class="form-label">Option 3</label>
+                                <input type="text" class="form-control" id="Option3" name="Option3" required />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Option4" class="form-label">Option 4</label>
+                                <input type="text" class="form-control" id="Option4" name="Option4" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="CorrectOption" class="form-label">Correct Option</label>
+                            <input type="text" class="form-control" id="CorrectOption" name="CorrectOption" placeholder="e.g., Option1" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Save Question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-center mb-4">Existing Questions</h2>
+
+    @if (Model.Questions != null && Model.Questions.Any())
+    {
+        foreach (var Question in Model.Questions)
+        {
+            <div class="row border p-3 mb-3">
+                <div class="col-md-2 text-center">
+                    <strong>QNo:</strong> @Question.QuestionNo
+                </div>
+                <div class="col-md-8">
+                    <strong>Question:</strong> @Question.Question
+                </div>
+                <div class="col-md-2 text-center">
+                    <a href="@Url.Action("EditQuestion", "Teacher", new { questionId = Question.QuestionId })" class="btn btn-warning btn-sm">
+                        Edit Question
+                    </a>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <strong>OP1:</strong> @Question.Option1
+                        </div>
+                        <div class="col-md-2">
+                            <strong>OP2:</strong> @Question.Option2
+                        </div>
+                        <div class="col-md-2">
+                            <strong>OP3:</strong> @Question.Option3
+                        </div>
+                        <div class="col-md-2">
+                            <strong>OP4:</strong> @Question.Option4
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Correct Answer:</strong> @Question.CorrectOption
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-center">No questions added yet.</p>
+    }
+</section>
+<section>
+    <div class="col-md-2 text-center">
+        <a href="@Url.Action("GoToBatch", "Teacher", new { BatchId = Model.createExamInfo.BatchId})" class="btn btn-primary btn-sm">
+           Finish 
+        </a>
+    </div>
+</section>
